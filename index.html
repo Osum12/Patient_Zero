@@ -1,0 +1,1391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patient Zero</title>
+<meta name="description" content="An AP Biology genetics mystery: trace a recessive disorder back through a four-generation pedigree.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   THEME TOKENS
+   ============================================================ */
+:root {
+  --bg: #eef2f1;
+  --surface: #fbfcfc;
+  --surface-2: #e4eae9;
+  --ink: #17211f;
+  --muted: #5b6b68;
+  --line: #c6d1cf;
+  --teal: #0d7a72;
+  --teal-ink: #ffffff;
+  --teal-soft: #d4ebe8;
+  --red: #c0392b;
+  --red-soft: #f6dcd8;
+  --amber: #c98a12;
+  --amber-soft: #f7ebcf;
+  --green: #2e8b57;
+  --green-soft: #d8eedf;
+  --paper: #efe3c6;
+  --paper-ink: #3b2f1c;
+  --paper-edge: #cdb98a;
+  --shadow: 0 1px 2px rgba(20,40,38,.08), 0 6px 24px rgba(20,40,38,.08);
+  --focus: 0 0 0 3px var(--bg), 0 0 0 5px var(--teal);
+  --ui: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1615; --surface: #172120; --surface-2: #1f2c2a; --ink: #e3ecea; --muted: #93a6a2;
+    --line: #2f403d; --teal: #3fb8ad; --teal-ink: #06211e; --teal-soft: #173b38;
+    --red: #e8665a; --red-soft: #3d1f1c; --amber: #e2ab3d; --amber-soft: #3a2e14;
+    --green: #5cc48a; --green-soft: #173323; --paper: #2b2519; --paper-ink: #eadcb8; --paper-edge: #5a4c2c;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1615; --surface: #172120; --surface-2: #1f2c2a; --ink: #e3ecea; --muted: #93a6a2;
+  --line: #2f403d; --teal: #3fb8ad; --teal-ink: #06211e; --teal-soft: #173b38;
+  --red: #e8665a; --red-soft: #3d1f1c; --amber: #e2ab3d; --amber-soft: #3a2e14;
+  --green: #5cc48a; --green-soft: #173323; --paper: #2b2519; --paper-ink: #eadcb8; --paper-edge: #5a4c2c;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--ui);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+h1, h2, h3, h4 { line-height: 1.15; margin: 0 0 .5em; }
+p { margin: 0 0 .9em; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 6px; }
+.mono { font-family: var(--mono); }
+.muted { color: var(--muted); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: .5em; justify-content: center;
+  border: 1.5px solid var(--teal); background: var(--teal); color: var(--teal-ink);
+  padding: .6em 1.1em; border-radius: 8px; font-weight: 600; cursor: pointer;
+  transition: transform .12s ease, filter .12s ease;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.08); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--teal); }
+.btn.small { padding: .35em .75em; font-size: .875rem; }
+.btn.danger { border-color: var(--red); color: var(--red); background: transparent; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 20px; }
+.eyebrow { font-family: var(--mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.chip {
+  display: inline-flex; align-items: center; gap: .4em; font-size: .8rem; font-weight: 600;
+  padding: .25em .7em; border-radius: 999px; background: var(--teal-soft); color: var(--teal);
+}
+.chip.red { background: var(--red-soft); color: var(--red); }
+.chip.amber { background: var(--amber-soft); color: var(--amber); }
+.chip.green { background: var(--green-soft); color: var(--green); }
+
+/* ============================================================
+   TITLE / BRIEF / WIN
+   ============================================================ */
+.screen-center { min-height: 100vh; display: grid; place-items: center; padding: 32px 16px; }
+.title-card { max-width: 640px; width: 100%; position: relative; padding: 48px 32px 36px; text-align: left; }
+.title-card h1 { font-size: clamp(2.6rem, 9vw, 4.4rem); font-weight: 800; letter-spacing: -.02em; margin: .2em 0 .15em; }
+.title-card .lede { font-size: 1.1rem; color: var(--muted); max-width: 46ch; }
+.stamp {
+  display: inline-block; font-family: var(--mono); font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--red); border: 2.5px solid var(--red); padding: .35em .8em; border-radius: 4px;
+  transform: rotate(-4deg); font-size: .85rem; opacity: .9;
+  animation: stamp-in .5s cubic-bezier(.2,1.6,.4,1) both .2s;
+}
+@keyframes stamp-in { from { transform: rotate(-4deg) scale(1.8); opacity: 0; } to { transform: rotate(-4deg) scale(1); opacity: .9; } }
+.title-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.case-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 28px; border-top: 1px dashed var(--line); padding-top: 18px; }
+.case-meta div { font-family: var(--mono); font-size: .8rem; }
+.case-meta b { display: block; font-family: var(--ui); font-size: .95rem; }
+
+.memo { max-width: 760px; width: 100%; }
+.memo-head { font-family: var(--mono); font-size: .85rem; border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 16px; display: grid; gap: 2px; }
+.memo-head span { color: var(--muted); display: inline-block; min-width: 4.5em; }
+.memo h2 { font-size: 1.6rem; }
+.memo ol { padding-left: 1.2em; }
+.memo li { margin-bottom: .4em; }
+
+.win-card { max-width: 820px; width: 100%; }
+.win-card h1 { font-size: clamp(1.8rem, 6vw, 2.8rem); }
+.debrief { display: grid; gap: 14px; margin: 20px 0; }
+.debrief section { border-left: 3px solid var(--teal); padding: 4px 0 4px 14px; }
+.debrief h3 { font-size: 1.05rem; }
+.debrief p:last-child { margin-bottom: 0; }
+.stats { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ============================================================
+   HUB
+   ============================================================ */
+.topbar { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
+.topbar-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-top: 10px; padding-bottom: 10px; }
+.brand { font-weight: 800; letter-spacing: -.01em; font-size: 1.15rem; display: flex; align-items: baseline; gap: 10px; }
+.brand .mono { font-size: .75rem; color: var(--red); font-weight: 600; letter-spacing: .08em; }
+.topbar .spacer { flex: 1; }
+.budget { font-family: var(--mono); font-size: .8rem; display: flex; align-items: center; gap: 6px; }
+.budget .pip { width: 10px; height: 10px; border-radius: 2px; background: var(--teal); }
+.budget .pip.used { background: var(--line); }
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  border: 0; background: transparent; padding: 12px 14px; font-weight: 600; color: var(--muted); cursor: pointer;
+  border-bottom: 3px solid transparent; white-space: nowrap; border-radius: 0;
+}
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--teal); }
+.tab .count { font-family: var(--mono); font-size: .75rem; background: var(--surface-2); padding: 1px 6px; border-radius: 999px; margin-left: 4px; }
+main { padding: 20px 0 48px; }
+.panel-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 16px; margin-bottom: 14px; }
+.panel-head h2 { font-size: 1.5rem; margin: 0; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+
+/* Pedigree */
+.tree-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid var(--line); background: var(--surface);
+  background-image: radial-gradient(var(--line) 1px, transparent 1px); background-size: 22px 22px; }
+.tree-scroll svg { display: block; width: 100%; min-width: 900px; height: auto; }
+.ped-line { stroke: var(--ink); stroke-width: 1.6; fill: none; }
+.ped-gen { font-family: var(--mono); font-size: 13px; fill: var(--muted); font-weight: 600; }
+.ped-name { font-family: var(--ui); font-size: 12.5px; font-weight: 600; fill: var(--ink); text-anchor: middle; }
+.ped-sub { font-family: var(--mono); font-size: 10.5px; fill: var(--muted); text-anchor: middle; }
+.ped-node { cursor: pointer; outline: none; }
+.ped-node .shape { fill: var(--surface); stroke: var(--ink); stroke-width: 1.8; transition: fill .3s ease; }
+.ped-node .ring { fill: none; stroke: transparent; stroke-width: 3; }
+.ped-node:hover .ring, .ped-node:focus-visible .ring { stroke: var(--teal); }
+.ped-node.affected .shape { fill: var(--red); stroke: var(--red); }
+.ped-node.carrier .half { fill: var(--amber); }
+.ped-node.carrier .shape { stroke: var(--amber); }
+.ped-node.clear .shape { stroke: var(--green); stroke-width: 3; fill: var(--green-soft); }
+.ped-node .slash { stroke: var(--ink); stroke-width: 1.8; }
+.ped-node .idot { fill: var(--teal); stroke: var(--surface); stroke-width: 1.5; }
+.ped-arrow { stroke: var(--ink); stroke-width: 1.6; fill: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 12px 2px 0; font-size: .85rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend svg { width: 18px; height: 18px; overflow: visible; }
+.tree-hint { margin: 12px 2px 0; font-size: .9rem; color: var(--muted); }
+
+/* Lab */
+.punnett { display: grid; grid-template-columns: 64px repeat(2, minmax(64px, 96px)); gap: 6px; margin: 14px 0; }
+.punnett .hdr { display: grid; place-items: center; font-family: var(--mono); font-weight: 600; font-size: 1.1rem; color: var(--muted); }
+.punnett .hdr small { font-family: var(--ui); font-size: .65rem; font-weight: 500; display: block; text-align: center; }
+.pcell {
+  aspect-ratio: 1; border: 2px dashed var(--line); border-radius: 10px; background: var(--surface-2); cursor: pointer;
+  font-family: var(--mono); font-size: 1.4rem; font-weight: 600; display: grid; place-items: center;
+}
+.pcell.filled { border-style: solid; border-color: var(--teal); background: var(--teal-soft); }
+.pcell.wrong { border-color: var(--red); background: var(--red-soft); }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+.choice {
+  border: 1.5px solid var(--line); background: var(--surface); border-radius: 8px; padding: .5em .9em; cursor: pointer; font-weight: 600;
+}
+.choice[aria-pressed="true"], .choice[aria-checked="true"] { border-color: var(--teal); background: var(--teal-soft); color: var(--teal); }
+.feedback { border-radius: 8px; padding: 12px 14px; margin-top: 12px; font-size: .95rem; }
+.feedback.bad { background: var(--red-soft); color: var(--ink); border-left: 4px solid var(--red); }
+.feedback.good { background: var(--green-soft); color: var(--ink); border-left: 4px solid var(--green); }
+.feedback.info { background: var(--amber-soft); color: var(--ink); border-left: 4px solid var(--amber); }
+.feedback ul { margin: .4em 0 0; padding-left: 1.2em; }
+
+.test-list { display: grid; gap: 8px; }
+.test-gen { font-family: var(--mono); font-size: .75rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin: 10px 0 2px; }
+.test-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.test-row .who { flex: 1; min-width: 140px; }
+.test-row .who b { display: block; font-size: .95rem; }
+.test-row .who small { color: var(--muted); font-size: .78rem; }
+.result { font-family: var(--mono); font-weight: 600; font-size: .85rem; padding: .25em .6em; border-radius: 6px; }
+.result.aa { background: var(--red-soft); color: var(--red); }
+.result.Aa { background: var(--amber-soft); color: var(--amber); }
+.result.AA { background: var(--green-soft); color: var(--green); }
+.result.na { background: var(--surface-2); color: var(--muted); }
+.lock { display: flex; gap: 12px; align-items: flex-start; }
+.lock .ico { font-size: 1.6rem; line-height: 1; }
+
+.printout { font-family: var(--mono); font-size: .85rem; background: var(--surface-2); border-radius: 8px; padding: 14px; white-space: pre-wrap; border: 1px solid var(--line); }
+
+/* Case board */
+.objectives { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.objectives li { display: flex; gap: 10px; align-items: flex-start; }
+.check { flex: none; width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; font-size: .8rem; font-weight: 800; margin-top: 1px; }
+.done .check { background: var(--teal); border-color: var(--teal); color: var(--teal-ink); }
+.done .obj-text { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.evidence-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.evidence-list li { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--surface); }
+.evidence-list b { display: block; }
+.evidence-list small { font-family: var(--mono); color: var(--muted); font-size: .75rem; }
+.hint-box { border: 1px dashed var(--teal); border-radius: 10px; padding: 12px 14px; background: var(--teal-soft); margin-bottom: 16px; }
+
+/* Field notes */
+.glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.glossary dt { font-weight: 700; font-size: 1.05rem; }
+.glossary dd { margin: 4px 0 0; color: var(--muted); font-size: .95rem; }
+.glossary .term { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+.backdrop {
+  position: fixed; inset: 0; background: rgba(8,18,17,.55); z-index: 50; display: grid; place-items: center; padding: 16px;
+  animation: fade .18s ease both;
+}
+.modal {
+  background: var(--surface); color: var(--ink); width: 100%; max-width: 620px; max-height: calc(100vh - 32px); overflow-y: auto;
+  border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.35); border: 1px solid var(--line);
+  animation: rise .22s cubic-bezier(.2,.9,.3,1) both;
+}
+.modal.wide { max-width: 820px; }
+.modal-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px 12px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.modal-head h2 { font-size: 1.25rem; margin: 0; }
+.modal-head .sub { font-size: .85rem; color: var(--muted); }
+.modal-head .grow { flex: 1; min-width: 0; }
+.modal-close { border: 0; background: var(--surface-2); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; flex: none; }
+.modal-body { padding: 16px 20px 20px; }
+.modal-foot { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; padding: 0 20px 20px; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+
+.portrait {
+  flex: none; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
+  background: var(--teal-soft); color: var(--teal); font-weight: 800; font-size: 1.15rem; border: 2px solid var(--teal);
+}
+.portrait img { width: 100%; height: 100%; object-fit: cover; }
+.audio-strip {
+  display: flex; align-items: center; gap: 10px; background: var(--surface-2); border: 1px dashed var(--line); border-radius: 8px;
+  padding: 8px 12px; font-size: .82rem; color: var(--muted); margin-bottom: 14px; flex-wrap: wrap;
+}
+.audio-strip audio { width: 100%; }
+.audio-strip code { font-family: var(--mono); font-size: .75rem; }
+.dialogue p { font-size: 1rem; }
+.dialogue .stage { font-style: italic; color: var(--muted); }
+.clue {
+  display: flex; gap: 10px; align-items: flex-start; border: 1.5px solid var(--teal); background: var(--teal-soft);
+  border-radius: 10px; padding: 10px 12px; margin-top: 8px;
+}
+.clue .tag { font-family: var(--mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); font-weight: 600; }
+
+/* Letter */
+.letter {
+  background: var(--paper); color: var(--paper-ink); font-family: var(--mono); font-size: .9rem; line-height: 1.65;
+  padding: 26px 24px; border-radius: 4px; border: 1px solid var(--paper-edge);
+  box-shadow: inset 0 0 60px rgba(120,90,30,.25), 0 4px 14px rgba(0,0,0,.18);
+  transform: rotate(-.6deg); position: relative;
+  background-image:
+    radial-gradient(ellipse at 15% 10%, rgba(140,100,40,.18), transparent 40%),
+    radial-gradient(ellipse at 85% 90%, rgba(140,100,40,.22), transparent 45%);
+}
+.letter p { margin-bottom: 1em; }
+.letter .date { text-align: right; }
+.letter .sig { margin-top: 1.4em; }
+.trunk-intro { font-style: italic; color: var(--muted); margin-bottom: 16px; }
+
+/* Accusation */
+.suspects { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 8px 0 18px; }
+.suspect { text-align: left; border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+.suspect b { display: block; }
+.suspect small { color: var(--muted); }
+.suspect[aria-checked="true"] { border-color: var(--teal); background: var(--teal-soft); }
+.ev-pick { display: grid; gap: 6px; margin: 8px 0; }
+.ev-opt { display: flex; gap: 10px; align-items: flex-start; text-align: left; border: 1.5px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+.ev-opt[aria-checked="true"] { border-color: var(--teal); background: var(--teal-soft); }
+.ev-opt .box { flex: none; width: 18px; height: 18px; border: 2px solid var(--line); border-radius: 4px; margin-top: 3px; display: grid; place-items: center; font-size: .7rem; font-weight: 800; }
+.ev-opt[aria-checked="true"] .box { background: var(--teal); border-color: var(--teal); color: var(--teal-ink); }
+
+/* Toast */
+.toasts { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 80; display: grid; gap: 8px; width: min(420px, calc(100vw - 32px)); pointer-events: none; }
+.toast { background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 10px; font-size: .9rem; box-shadow: var(--shadow); animation: rise .25s ease both; }
+.toast b { color: var(--teal-soft); }
+
+@media (max-width: 520px) {
+  .title-card { padding: 36px 20px 28px; }
+  .card { padding: 16px; }
+  .modal-head { padding: 14px 16px 10px; }
+  .modal-body { padding: 14px 16px 16px; }
+  .modal-foot { padding: 0 16px 16px; }
+  .brand { font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<script>
+/* =====================================================================
+   EDITABLE CONTENT
+   Everything a teacher might want to change lives in this block:
+   names, ages, dialogue, evidence, and paths to your own audio/portraits.
+   - Set `audio` / `portrait` on an INTERVIEWS entry to a relative path
+     (e.g. "audio/sam.mp3", "img/sam.jpg") to replace the placeholders.
+   - Dialogue strings may contain simple HTML such as <em>…</em>.
+   - `truth` is the hidden genotype. Keep it consistent with
+     autosomal recessive inheritance if you edit the family.
+   ===================================================================== */
+
+const CASE = {
+  number: "0031-K",
+  disorder: "Keller Syndrome",
+  gene: "KLR1",
+  testBudget: 6,
+  interviewsForPattern: 4,
+  interviewsObjective: 6,
+  testsRequired: 3,
+  answer: "emeka"
+};
+
+// Pedigree coordinates are in SVG units (viewBox 1020 × 540).
+const GEN_Y = { 1: 70, 2: 200, 3: 340, 4: 470 };
+
+const FAMILY = {
+  emeka:    { name: "Emeka Okafor",    short: "Emeka",    sex: "M", gen: 1, x: 560, truth: "Aa", deceased: true, years: "1934–2003", role: "Grandfather · emigrated from Nigeria, 1961" },
+  adaeze:   { name: "Adaeze Okafor",   short: "Adaeze",   sex: "F", gen: 1, x: 660, truth: "AA", deceased: true, years: "1938–2011", role: "Grandmother" },
+
+  chidi:    { name: "Chidi Okafor",    short: "Chidi",    sex: "M", gen: 2, x: 220, truth: "Aa", age: 67, role: "Emeka's eldest son · Kelechi's father" },
+  folake:   { name: "Folake Okafor",   short: "Folake",   sex: "F", gen: 2, x: 320, truth: "Aa", age: 64, role: "Chidi's wife (married in)", marriedIn: true },
+  ngozi:    { name: "Ngozi Bell",      short: "Ngozi",    sex: "F", gen: 2, x: 540, truth: "AA", age: 64, role: "Emeka's daughter" },
+  daniel:   { name: "Daniel Bell",     short: "Daniel",   sex: "M", gen: 2, x: 640, truth: "AA", age: 66, role: "Ngozi's husband (married in)", marriedIn: true },
+  obi:      { name: "Obi Okafor",      short: "Obi",      sex: "M", gen: 2, x: 860, truth: "Aa", age: 61, role: "Emeka's younger son · Sam's father" },
+  yemi:     { name: "Yemi Okafor",     short: "Yemi",     sex: "F", gen: 2, x: 960, truth: "Aa", age: 57, role: "Obi's wife (married in)", marriedIn: true },
+
+  dara:     { name: "Dara Okafor",     short: "Dara",     sex: "F", gen: 3, x: 100, truth: "AA", age: 37, role: "Kelechi's wife (married in)", marriedIn: true },
+  kelechi:  { name: "Kelechi Okafor",  short: "Kelechi",  sex: "M", gen: 3, x: 170, truth: "aa", age: 38, role: "Sam's cousin · affected since age 15", knownAffected: true },
+  adanna:   { name: "Adanna Reyes",    short: "Adanna",   sex: "F", gen: 3, x: 270, truth: "Aa", age: 35, role: "Kelechi's sister" },
+  marcus:   { name: "Marcus Reyes",    short: "Marcus",   sex: "M", gen: 3, x: 340, truth: "AA", age: 36, role: "Adanna's husband (married in)", marriedIn: true },
+  tobi:     { name: "Tobi Okafor",     short: "Tobi",     sex: "M", gen: 3, x: 420, truth: "AA", age: 31, role: "Kelechi's brother" },
+  zara:     { name: "Zara Bell",       short: "Zara",     sex: "F", gen: 3, x: 550, truth: "AA", age: 24, role: "Ngozi's daughter · medical student" },
+  emekajr:  { name: "Emeka Bell Jr.",  short: "Emeka Jr", sex: "M", gen: 3, x: 630, truth: "AA", age: 21, role: "Ngozi's son · named for his grandfather" },
+  chiamaka: { name: "Chiamaka Okafor", short: "Chiamaka", sex: "F", gen: 3, x: 860, truth: "Aa", age: 31, role: "Sam's sister" },
+  sam:      { name: "Sam Okafor",      short: "Sam",      sex: "M", gen: 3, x: 960, truth: "aa", age: 28, role: "The proband · newly diagnosed", knownAffected: true, proband: true },
+
+  nia:      { name: "Nia Okafor",      short: "Nia",      sex: "F", gen: 4, x: 135, truth: "Aa", age: 9, role: "Kelechi & Dara's daughter", minor: true },
+  lola:     { name: "Lola Reyes",      short: "Lola",     sex: "F", gen: 4, x: 305, truth: "Aa", age: 6, role: "Adanna & Marcus's daughter", minor: true }
+};
+
+// Couples drive every connector line: couple line, drop, sibship rail, child drops.
+const COUPLES = [
+  { partners: ["emeka", "adaeze"],  children: ["chidi", "ngozi", "obi"] },
+  { partners: ["chidi", "folake"],  children: ["kelechi", "adanna", "tobi"] },
+  { partners: ["ngozi", "daniel"],  children: ["zara", "emekajr"] },
+  { partners: ["obi", "yemi"],      children: ["chiamaka", "sam"] },
+  { partners: ["dara", "kelechi"],  children: ["nia"] },
+  { partners: ["adanna", "marcus"], children: ["lola"] }
+];
+
+const EVIDENCE = {
+  e_proband:        { title: "Sam is the proband", detail: "Sam's diagnosis opened this case — he is the family member through whom the condition came to our attention.", source: "Interview · Sam" },
+  e_same:           { title: "Two cousins, one disorder", detail: "Kelechi (onset at 15) and Sam carry the same diagnosis: Keller Syndrome.", source: "Interview · Kelechi" },
+  e_healthy_parents:{ title: "Healthy parents, affected child", detail: "Neither Chidi nor Folake has ever shown symptoms, yet their son Kelechi is affected.", source: "Interview · Chidi" },
+  e_recessive:      { title: "Recessive alleles hide in carriers", detail: "A carrier (Aa) looks healthy; a recessive trait can skip generations and surface when two carriers have a child.", source: "Interview · Zara" },
+  e_two_branches:   { title: "Affected cousins in two branches", detail: "Kelechi (Chidi's line) and Sam (Obi's line) are both affected. Their only shared ancestors are Emeka and Adaeze.", source: "Interview · Obi" },
+  e_obligate:       { title: "Nia must carry one copy", detail: "Kelechi is aa, so every child he has receives an a from him. His daughter Nia is an obligate carrier.", source: "Interview · Dara" },
+  e_folake_rumor:   { title: "Rumor: 'weak blood' on Folake's side", detail: "Folake recalls a distant cousin in Ibadan said to have had 'weak blood'. Unconfirmed, no diagnosis.", source: "Interview · Folake" },
+  e_unrelated_wives:{ title: "Folake and Yemi are unrelated", detail: "The two wives who married into the family come from different families and never met before 1992.", source: "Interview · Yemi" },
+  e_trunk:          { title: "Emeka's locked trunk", detail: "Emeka kept a locked trunk of papers from Nigeria. Ngozi has the key.", source: "Interview · Daniel" },
+  e_adaeze_clean:   { title: "Adaeze's side: healthy to 95", detail: "Adaeze's sister lived to 95 without illness, and no one on Adaeze's side ever showed these symptoms.", source: "Interview · Ngozi" },
+  e_letter:         { title: "Emeka's 1989 letter: his brother Ikenna", detail: "Emeka wrote that his brother Ikenna weakened from age 14 and died at 19 of the same illness in Nigeria.", source: "Archive · the trunk" },
+  e_both_sons:      { title: "Both of Emeka's sons are carriers", detail: "Lab confirms Chidi and Obi are both Aa — brothers who share Emeka as their father.", source: "Lab · KLR1 panel" }
+};
+
+const INTERVIEWS = {
+  sam: {
+    audio: null, portrait: null,
+    lines: [
+      `<span class="stage">Sam sits on the edge of the chair, phone face-down on his knee.</span>`,
+      `"Dr. Ahn wrote a word on my chart — <em>proband</em>. Sounds like a sci-fi villain. She said it just means I'm the person whose diagnosis started the family investigation. Lucky me."`,
+      `"Here's what I don't get. Mom's fine. Dad's fine. My sister's fine. Kelechi's had the same thing since high school, but he's from Uncle Chidi's side of the house. Nobody can tell me how I got something my parents don't have. Chiamaka's talking about kids. I need an answer for her, not just me."`
+    ],
+    clue: "e_proband"
+  },
+  kelechi: {
+    audio: null, portrait: null,
+    lines: [
+      `"Fifteen. That's when the stairs started winning. Then the anemia — I was pale as paper at every family photo. They called it 'a muscle thing' for years before anyone said <em>Keller</em>."`,
+      `"When Sam called me last month I knew before he finished the sentence. Same tiredness, same legs. Twenty-three years apart, two different houses, same disease."`,
+      `"My parents? Never sick a day. That's what always bothered me. Where did it come from?"`
+    ],
+    clue: "e_same"
+  },
+  chidi: {
+    audio: null, portrait: null,
+    lines: [
+      `<span class="stage">Chidi speaks slowly, the way a retired engineer reads a schematic.</span>`,
+      `"Let me be precise. Folake has never had a symptom. I have never had a symptom. We have three children. Two are perfectly healthy. Kelechi is not."`,
+      `"So whatever this is, it did not come from a sick parent. It came <em>through</em> healthy ones. I have turned that over in my head for twenty years."`
+    ],
+    clue: "e_healthy_parents"
+  },
+  folake: {
+    audio: null, portrait: null,
+    lines: [
+      `"I know what people think when a child is sick. They look at the mother. I married into this family in 1986, and I felt those eyes for years."`,
+      `"Well — I'll tell you, because you'll hear it anyway. My mother's cousin in Ibadan, people whispered she had 'weak blood.' Nobody ever saw a doctor. That's all I know."`,
+      `<span class="stage">She folds her hands.</span> "But my family is not Obi's wife's family. Remember that."`
+    ],
+    clue: "e_folake_rumor"
+  },
+  obi: {
+    audio: null, portrait: null,
+    lines: [
+      `"Sit, sit! You want tea? No? Okay, business."`,
+      `"Here's the thing that keeps me up. My boy Sam. My brother's boy Kelechi. Two branches — mine and Chidi's — same tree, same sickness. Chidi and I share exactly two people: Papa and Mama. That's it. That's the whole overlap."`,
+      `"So if it's in the blood, it came down the trunk of the tree, not the branches. Am I wrong? Tell me I'm wrong."`
+    ],
+    clue: "e_two_branches"
+  },
+  yemi: {
+    audio: null, portrait: null,
+    lines: [
+      `"I'm a pharmacist, so I'll keep it factual. I married Obi in 1992. My people are from Enugu. Folake's family is Yoruba, from Ibadan. We met for the first time at my wedding."`,
+      `"So whatever you're thinking — that Folake and I somehow brought the same thing in — we're not related. Not cousins, not anything."`,
+      `"If I'm a carrier, fine. Test me. But I can only have passed something to Sam and Chiamaka. I never had anything to do with Kelechi."`
+    ],
+    clue: "e_unrelated_wives"
+  },
+  ngozi: {
+    audio: null, audioDeep: null, portrait: null, // audio = refusal, audioDeep = after pattern is solved
+    gate: true,
+    refusal: [
+      `<span class="stage">Ngozi doesn't open the screen door.</span>`,
+      `"My parents are dead. I won't have their names dragged through a 'mystery' by someone who can't tell me how this illness actually passes from one person to another."`,
+      `"Come back when you know the <em>pattern</em>. Then maybe we'll talk."`
+    ],
+    lines: [
+      `<span class="stage">This time she opens the door, and sets out two cups.</span>`,
+      `"Autosomal recessive. So it can hide in healthy people and both parents have to pass it. All right. You did your homework."`,
+      `"Then here is what I've never told the children. Papa had a brother. He died young, back home, before Papa came to England. Papa would not say his name. Mama once said, 'It was the sickness that takes the legs.'"`,
+      `"And Mama's side — her sister Nkem lived to ninety-five, strong as an iroko tree. Nobody on Mama's side ever had anything like this. Papa's papers are in his trunk. I've had the key since 2011. Go ahead — open it."`
+    ],
+    clue: "e_adaeze_clean"
+  },
+  daniel: {
+    audio: null, portrait: null,
+    lines: [
+      `"I'm the in-law who married the bossy daughter. Forty years, no regrets."`,
+      `"Emeka was a good man but a closed book. He kept a locked trunk from Nigeria — letters, photos. Even Ngozi didn't open it after he passed. She has the key, though. Says she isn't ready."`,
+      `"If anyone in this family knows what's in that trunk, it's my wife. Good luck getting it out of her."`
+    ],
+    clue: "e_trunk"
+  },
+  zara: {
+    audio: null, portrait: null,
+    lines: [
+      `"Okay, medical student mode. Every gene comes in two copies — two <em>alleles</em>, one from each parent. Call the working one <em>A</em> and the broken one <em>a</em>."`,
+      `"If the disorder is recessive, you need <em>aa</em> to be sick. <em>Aa</em> people are carriers — totally healthy, but they can pass the a on. Two carriers have a one-in-four chance with each kid of an <em>aa</em> child. That's how it 'skips' generations."`,
+      `"Which, honestly, is exactly what Uncle Chidi and Auntie Folake look like. Healthy parents, sick son. Textbook."`
+    ],
+    clue: "e_recessive"
+  },
+  emekajr: {
+    audio: null, portrait: null,
+    lines: [
+      `"I was named after him. I was eight when he died, so mostly I remember his hands and the way he hummed when he cooked."`,
+      `"He used to write letters at the kitchen table. Long ones. Mum said he never mailed half of them — he'd just fold them up and put them away somewhere."`,
+      `"Do you think one of those letters has something to do with this?"`
+    ]
+  },
+  adanna: {
+    audio: null, portrait: null,
+    lines: [
+      `"I grew up watching my big brother get weaker, so yes, I've thought about this."`,
+      `"I'm healthy. My husband is healthy. Lola is six and runs everywhere. But 'healthy' didn't mean anything for my parents, did it? They were healthy too."`,
+      `"If there's a test, I want to know what Lola might be carrying before she's old enough to ask me herself."`
+    ]
+  },
+  tobi: {
+    audio: null, portrait: null,
+    lines: [
+      `"Youngest of Chidi's three. The one nobody worries about."`,
+      `"Look, I'm fine. Never been tired a day in my life. I figure Kelechi got the bad draw and Adanna and I got lucky. That's how it works, right? Coin flips."`,
+      `<span class="stage">He shrugs, but he's watching your notes.</span> "...It is coin flips, right?"`
+    ]
+  },
+  chiamaka: {
+    audio: null, portrait: null,
+    lines: [
+      `"My husband and I want to start trying next year. Then Sam got his diagnosis, and suddenly every plan has an asterisk."`,
+      `"I'm fine. I've always been fine. But I watched Kelechi, and now Sam. I need to know: am I carrying it? And if I am, what does that mean for a baby?"`,
+      `"I don't need comfort. I need numbers."`
+    ]
+  },
+  dara: {
+    audio: null, portrait: null,
+    lines: [
+      `"I married Kelechi knowing about the diagnosis. We talked to a counselor before Nia — someone like you."`,
+      `"She asked me a question I've never forgotten: if Kelechi has two broken copies, which copy does he give our daughter? Answer: a broken one. Every time. There's no other kind to give."`,
+      `"So Nia is healthy, but she <em>must</em> carry one. We didn't need a test to know that."`
+    ],
+    clue: "e_obligate"
+  },
+  marcus: {
+    audio: null, portrait: null,
+    lines: [
+      `"My family's from Ohio, Scots-Irish on one side, Mexican on the other. Nothing like this anywhere that I know of."`,
+      `"Lola's healthy. Adanna worries; I try to be the calm one. But I'd rather know than guess."`,
+      `"If the bad copy came in with somebody, it wasn't me. I came in way too late to explain anything upstream."`
+    ]
+  }
+};
+
+const LETTER = {
+  intro: "Inside the trunk: a Nigerian passport stamped 1961, a photograph of two boys in school uniforms, and one letter — addressed but never sent.",
+  date: "London, 14 March 1989",
+  paragraphs: [
+    "My dear Ikenna,",
+    "It is thirty-six years since we buried you. I am an old man writing to a boy of nineteen, which is foolish, but there is no one else I can say this to.",
+    "You remember how it began. At fourteen you could no longer race me to the river. Your legs grew weak, your blood grew thin, and the doctor in Onitsha could do nothing. Mama said it was a curse on Papa's people. Papa said nothing at all. Both of them were strong until the end, which made it stranger.",
+    "Last week a doctor at the hospital where I work spoke of illnesses that sleep inside healthy people and wake only in their children. I could not breathe. I thought of you. I thought of my own children, and the grandchildren who are coming.",
+    "Adaeze's people are strong as iroko trees. If this sleeping thing lives in our family, Ikenna, it came with me. I have never told her. I have never told the children. Perhaps that is cowardice. Perhaps one day someone will open this trunk and be wiser than I was.",
+  ],
+  signoff: "Your brother always,\nEmeka"
+};
+
+const PATTERN_OPTIONS = [
+  { id: "ar", label: "Autosomal recessive", correct: true,
+    feedback: "Correct. Unaffected parents (Chidi & Folake, Obi & Yemi) have affected children, so the allele hides in carriers. Males and females can both be affected or carry it, and the shared line runs through fathers — consistent with an autosomal gene." },
+  { id: "ad", label: "Autosomal dominant",
+    feedback: "Not quite. A dominant allele shows up in everyone who carries it. Chidi, Folake, Obi and Yemi are all healthy, yet each couple had an affected child. A dominant trait can't hide in healthy parents and then appear in their kids." },
+  { id: "xl", label: "X-linked recessive",
+    feedback: "Look at who connects the patients. X-linked recessive disorders reach sons through carrier MOTHERS, because a father gives his son a Y, not an X. But Kelechi and Sam connect to each other through their FATHERS — Chidi and Obi, who are brothers. A father can't hand an X-linked allele to his son, so this can't be X-linked." },
+  { id: "mt", label: "Mitochondrial",
+    feedback: "Mitochondria come only from the mother's egg. Kelechi's mother (Folake) and Sam's mother (Yemi) are unrelated women who married in — they share no maternal line. Mitochondrial inheritance couldn't link the two affected cousins." }
+];
+
+const SUSPECTS = [
+  { id: "emeka",  rebuttal: "" },
+  { id: "adaeze", rebuttal: "Adaeze is a grandparent of both affected cousins, so she's worth suspecting. But her side has a clean history — her sister lived healthy to 95 and no one on her side ever showed symptoms — while Emeka's own letter describes a brother who died of this illness. The evidence points to the other grandparent." },
+  { id: "chidi",  rebuttal: "Chidi is a carrier — but he inherited it. His own parents were healthy, and he can't explain Sam, who is in his brother's branch. When two siblings both carry the same rare allele, go back a generation to the parent they share." },
+  { id: "obi",    rebuttal: "Obi is a carrier — but he inherited it. He can't explain Kelechi, who is in his brother Chidi's branch. Two brothers who both carry the allele got it from a shared parent. Go back a generation." },
+  { id: "folake", rebuttal: "Folake is a carrier, but she married in. She can only have passed the allele to her own children — Kelechi's branch. She has no genetic connection to Sam. Patient zero must sit where BOTH affected branches meet." },
+  { id: "yemi",   rebuttal: "Yemi is a carrier, but she married in. She can only explain Sam's branch, and she's unrelated to Folake, so she can't explain Kelechi. Patient zero must sit where BOTH affected branches meet." },
+  { id: "ngozi",  rebuttal: "Ngozi is Emeka's daughter, but she's a sibling of Chidi and Obi, not their parent — she can't have passed anything to her brothers. She has no affected descendants, and a carrier's child has a 50% chance of not inheriting the allele at all." },
+  { id: "daniel", rebuttal: "Daniel married in and has no genetic connection to Kelechi or Sam. Someone outside both affected branches can't be their common source." }
+];
+
+const GLOSSARY = [
+  { term: "Allele", def: "One version of a gene. You inherit two alleles for each autosomal gene — one from each parent. Here, A works normally and a is the Keller variant." },
+  { term: "Genotype", def: "The alleles a person has (AA, Aa or aa). Genotypes are hidden; you learn them from a test or deduce them from relatives." },
+  { term: "Phenotype", def: "The observable trait. For Keller Syndrome: affected (muscle weakness + anemia) or unaffected." },
+  { term: "Carrier", def: "A person with one copy of a recessive allele (Aa). Carriers are healthy but can pass the allele on to their children." },
+  { term: "Autosomal recessive", def: "The gene is on a non-sex chromosome and two copies (aa) are needed to be affected. Two carrier parents have a 1/4 chance of an affected child each pregnancy." },
+  { term: "Pedigree", def: "A family-tree diagram using standard symbols — squares for males, circles for females, filled shapes for affected individuals — to track a trait across generations." },
+  { term: "Proband", def: "The individual whose diagnosis brings a family to medical attention and starts the investigation. Marked with an arrow on a pedigree. In this case: Sam." },
+  { term: "Obligate carrier", def: "Someone who must be a carrier based on the pedigree alone, no test required — like the child of an aa parent, or the healthy parent of an aa child." },
+  { term: "Patient zero", def: "Borrowed from epidemiology, where it means the first case in an outbreak. In a pedigree it means the founder: the ancestor through whom a variant entered the family, so every affected descendant's copy is identical by descent." },
+  { term: "Identical by descent", def: "Two copies of an allele that are the same because they were inherited from a common ancestor — like Kelechi's and Sam's copies, both traced to Emeka." }
+];
+
+/* =====================================================================
+   ENGINE — you shouldn't need to edit below this line to change content
+   ===================================================================== */
+
+const STORE_KEY = "patientZero.v1";
+const PUNNETT_COLS = ["A", "a"]; // Chidi's alleles
+const PUNNETT_ROWS = ["A", "a"]; // Folake's alleles
+const PUNNETT_CYCLE = ["", "AA", "Aa", "aa"];
+const FRACTIONS = ["0%", "25%", "50%", "75%"];
+
+function defaultState() {
+  return {
+    screen: "title", tab: "tree", theme: "auto",
+    interviewed: {}, evidence: [],
+    punnett: ["", "", "", ""], fraction: null, certFeedback: null, certified: false,
+    tests: {}, testsUsed: 0, lastTest: null,
+    pattern: false, patternPick: null, ngoziDeep: false, archive: false,
+    accuse: { suspect: null, evidence: [], feedback: null }, attempts: 0, solved: false
+  };
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return Object.assign(defaultState(), JSON.parse(raw));
+  } catch (e) { /* storage unavailable */ }
+  return defaultState();
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+}
+
+let state = load();
+let modal = null; // { type, id, openerFid }
+
+function setState(patch) {
+  Object.assign(state, patch);
+  save();
+  render();
+  if (modal) renderModal(false);
+}
+
+/* ---------- helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const initials = name => name.split(/\s+/).filter(w => /[A-Za-z]/.test(w[0])).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+const interviewCount = () => Object.keys(state.interviewed).length;
+const has = ev => state.evidence.includes(ev);
+
+function statusOf(id) {
+  const m = FAMILY[id];
+  if (m.knownAffected) return "affected";
+  const t = state.tests[id];
+  if (t === "aa") return "affected";
+  if (t === "Aa") return "carrier";
+  if (t === "AA") return "clear";
+  return "unknown";
+}
+const STATUS_LABEL = { affected: "affected", carrier: "confirmed carrier", clear: "tested clear", unknown: "status unknown" };
+
+function addEvidence(id) {
+  if (!id || has(id)) return false;
+  state.evidence.push(id);
+  toast(`New evidence: <b>${esc(EVIDENCE[id].title)}</b>`);
+  return true;
+}
+
+function toast(html) {
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.innerHTML = html;
+  $("#toasts").appendChild(t);
+  setTimeout(() => t.remove(), 3800);
+}
+
+function applyTheme() {
+  const r = document.documentElement;
+  if (state.theme === "auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", state.theme);
+}
+
+function caseReady() { return state.pattern && state.archive && state.testsUsed >= CASE.testsRequired; }
+
+/* ---------- render root ---------- */
+function render() {
+  applyTheme();
+  const fid = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.fid : null;
+  const app = $("#app");
+  if (state.screen === "title") app.innerHTML = renderTitle();
+  else if (state.screen === "brief") app.innerHTML = renderBrief();
+  else if (state.screen === "win") app.innerHTML = renderWin();
+  else app.innerHTML = renderHub();
+  if (fid && !modal) { const el = document.querySelector(`[data-fid="${fid}"]`); if (el) el.focus(); }
+}
+
+function renderTitle() {
+  const resume = state.screen === "title" && (interviewCount() > 0 || state.certified);
+  return `
+  <div class="screen-center">
+    <div class="card title-card">
+      <span class="stamp">Confidential · Case ${esc(CASE.number)}</span>
+      <h1>Patient Zero</h1>
+      <p class="lede">A genetic counseling case file. Two cousins, one rare disorder, four generations of family. Find where it began.</p>
+      <div class="title-actions">
+        <button class="btn" data-action="start" data-fid="start">${resume ? "Resume investigation" : "Open case file"}</button>
+        ${resume ? `<button class="btn ghost" data-action="askReset" data-fid="reset0">Start over</button>` : ""}
+      </div>
+      <div class="case-meta">
+        <div><b>Family</b>Okafor</div>
+        <div><b>Referral</b>${esc(CASE.disorder)}</div>
+        <div><b>Unit</b>AP Bio · Heredity</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderBrief() {
+  return `
+  <div class="screen-center">
+    <article class="card memo">
+      <div class="memo-head">
+        <div><span>TO:</span> Genetic Counselor (you)</div>
+        <div><span>FROM:</span> Dr. R. Ahn, Clinical Genetics</div>
+        <div><span>RE:</span> Case ${esc(CASE.number)} — Okafor family</div>
+      </div>
+      <h2>Case briefing</h2>
+      <p><b>Sam Okafor, 28,</b> was diagnosed this week with <b>${esc(CASE.disorder)}</b> — progressive muscle weakness with anemia. It is a rare <em>autosomal recessive</em>-suspected condition caused by variants in the ${esc(CASE.gene)} gene.</p>
+      <p>Sam's cousin <b>Kelechi, 38,</b> has had the same disorder since age 15. Neither man's parents are affected.</p>
+      <p>The family wants to know two things: where this came from, and who else might be carrying it. Your job is to trace the pedigree back to the family's <b>patient zero</b> — the ancestor through whom the variant entered this family.</p>
+      <ol>
+        <li>Interview family members from the <b>Family Tree</b>.</li>
+        <li>Earn lab certification and spend your <b>${CASE.testBudget} genetic tests</b> wisely.</li>
+        <li>Establish the inheritance pattern, then open the sealed Gen-I records.</li>
+        <li>Name patient zero on the <b>Case Board</b> with your three strongest pieces of evidence.</li>
+      </ol>
+      <div class="title-actions">
+        <button class="btn" data-action="begin" data-fid="begin">Begin investigation</button>
+        <button class="btn ghost" data-action="toTitle" data-fid="back">Back</button>
+      </div>
+    </article>
+  </div>`;
+}
+
+function renderHub() {
+  const tabs = [
+    ["tree", "Family Tree", ""],
+    ["lab", "Lab", state.certified ? `${CASE.testBudget - state.testsUsed} left` : ""],
+    ["board", "Case Board", state.evidence.length],
+    ["notes", "Field Notes", ""]
+  ];
+  const pips = Array.from({ length: CASE.testBudget }, (_, i) => `<span class="pip ${i < state.testsUsed ? "used" : ""}"></span>`).join("");
+  const themeLabel = { auto: "Theme: auto", light: "Theme: light", dark: "Theme: dark" }[state.theme];
+  let panel = "";
+  if (state.tab === "tree") panel = renderTree();
+  else if (state.tab === "lab") panel = renderLab();
+  else if (state.tab === "board") panel = renderBoard();
+  else panel = renderNotes();
+  return `
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">Patient Zero <span class="mono">CASE ${esc(CASE.number)}</span></div>
+      <div class="spacer"></div>
+      <div class="budget" aria-label="${CASE.testBudget - state.testsUsed} of ${CASE.testBudget} tests remaining">Tests ${pips}</div>
+      <button class="btn ghost small" data-action="theme" data-fid="theme">${themeLabel}</button>
+      <button class="btn danger small" data-action="askReset" data-fid="reset">Reset</button>
+    </div>
+    <div class="wrap">
+      <div class="tabs" role="tablist" aria-label="Investigation">
+        ${tabs.map(([id, label, count]) => `<button class="tab" role="tab" id="tab-${id}" aria-controls="panel" aria-selected="${state.tab === id}" tabindex="${state.tab === id ? 0 : -1}" data-action="tab" data-tab="${id}" data-fid="tab-${id}">${label}${count !== "" ? `<span class="count">${count}</span>` : ""}</button>`).join("")}
+      </div>
+    </div>
+  </header>
+  <main class="wrap" id="panel" role="tabpanel" aria-labelledby="tab-${state.tab}">${panel}</main>`;
+}
+
+/* ---------- FAMILY TREE ---------- */
+const R = 18;
+function shapeSvg(m, cls) {
+  // cls: extra class for shape. Returns shape + optional carrier half-fill.
+  const { x } = m, y = GEN_Y[m.gen];
+  if (m.sex === "M") {
+    return `<rect class="${cls}" x="${x - R}" y="${y - R}" width="${R * 2}" height="${R * 2}" rx="2"/>`;
+  }
+  return `<circle class="${cls}" cx="${x}" cy="${y}" r="${R}"/>`;
+}
+function halfSvg(m) {
+  const { x } = m, y = GEN_Y[m.gen];
+  if (m.sex === "M") return `<rect class="half" x="${x - R}" y="${y - R}" width="${R}" height="${R * 2}" rx="2"/>`;
+  return `<path class="half" d="M ${x} ${y - R} A ${R} ${R} 0 0 0 ${x} ${y + R} Z"/>`;
+}
+
+function nodeSvg(id) {
+  const m = FAMILY[id], y = GEN_Y[m.gen], st = statusOf(id);
+  const sub = m.deceased ? `d. ${m.years.split("–")[1]}` : `${m.age}`;
+  const geno = (state.tests[id] || (m.knownAffected ? "aa" : "")) ;
+  const label = `${m.name}, ${m.deceased ? "deceased" : m.age}, ${m.role}. ${STATUS_LABEL[st]}${state.interviewed[id] ? ", interviewed" : ""}.`;
+  let parts = shapeSvg(m, "shape");
+  if (st === "carrier") parts += halfSvg(m) + shapeSvg(m, "shape").replace('class="shape"', 'class="shape" style="fill:none"');
+  if (m.deceased) parts += `<line class="slash" x1="${m.x - R - 7}" y1="${y + R + 7}" x2="${m.x + R + 7}" y2="${y - R - 7}"/>`;
+  if (state.interviewed[id]) parts += `<circle class="idot" cx="${m.x + R + 5}" cy="${y - R + 2}" r="5"/>`;
+  const ring = m.sex === "M"
+    ? `<rect class="ring" x="${m.x - R - 5}" y="${y - R - 5}" width="${R * 2 + 10}" height="${R * 2 + 10}" rx="6"/>`
+    : `<circle class="ring" cx="${m.x}" cy="${y}" r="${R + 5}"/>`;
+  return `<g class="ped-node ${st}" role="button" tabindex="0" aria-label="${esc(label)}" data-action="node" data-id="${id}" data-fid="node-${id}">
+    <title>${esc(m.name)}</title>
+    ${ring}${parts}
+    <text class="ped-name" x="${m.x}" y="${y + R + 16}">${esc(m.short)}</text>
+    <text class="ped-sub" x="${m.x}" y="${y + R + 30}">${esc(sub)}${geno ? " · " + geno : ""}</text>
+  </g>`;
+}
+
+function connectorsSvg() {
+  let out = "";
+  for (const c of COUPLES) {
+    const [a, b] = c.partners.map(id => FAMILY[id]).sort((p, q) => p.x - q.x);
+    const y = GEN_Y[a.gen];
+    out += `<line class="ped-line" x1="${a.x + R}" y1="${y}" x2="${b.x - R}" y2="${y}"/>`;
+    if (!c.children.length) continue;
+    const mid = (a.x + b.x) / 2;
+    const kids = c.children.map(id => FAMILY[id]);
+    const childY = GEN_Y[kids[0].gen];
+    const railY = childY - R - 26;
+    out += `<line class="ped-line" x1="${mid}" y1="${y}" x2="${mid}" y2="${railY}"/>`;
+    const xs = kids.map(k => k.x).concat(mid);
+    const lo = Math.min(...xs), hi = Math.max(...xs);
+    if (hi > lo) out += `<line class="ped-line" x1="${lo}" y1="${railY}" x2="${hi}" y2="${railY}"/>`;
+    for (const k of kids) out += `<line class="ped-line" x1="${k.x}" y1="${railY}" x2="${k.x}" y2="${childY - R}"/>`;
+  }
+  return out;
+}
+
+function probandArrow() {
+  const p = Object.values(FAMILY).find(m => m.proband);
+  if (!p) return "";
+  const y = GEN_Y[p.gen];
+  const tipX = p.x - R - 3, tipY = y + R + 3;
+  return `<g aria-hidden="true">
+    <line class="ped-arrow" x1="${tipX - 22}" y1="${tipY + 18}" x2="${tipX - 4}" y2="${tipY + 3}"/>
+    <path class="ped-arrow" d="M ${tipX} ${tipY} l -10 2 l 6 6 z"/>
+    <text class="ped-sub" x="${tipX - 30}" y="${tipY + 30}" style="font-weight:600">P</text>
+  </g>`;
+}
+
+function renderTree() {
+  const gens = Object.entries(GEN_Y).map(([g, y]) => `<text class="ped-gen" x="12" y="${y + 5}">${["", "I", "II", "III", "IV"][g]}</text>`).join("");
+  const nodes = Object.keys(FAMILY).map(nodeSvg).join("");
+  const mini = (inner) => `<svg viewBox="-10 -10 20 20" aria-hidden="true">${inner}</svg>`;
+  const ink = "var(--ink)";
+  return `
+  <div class="panel-head">
+    <div><div class="eyebrow">Pedigree · ${esc(CASE.disorder)}</div><h2>Okafor family tree</h2></div>
+    <div class="muted" style="font-size:.9rem">${interviewCount()} interviewed · ${Object.keys(state.tests).length} tested</div>
+  </div>
+  <div class="tree-scroll" tabindex="-1">
+    <svg viewBox="0 0 1020 540" role="group" aria-label="Okafor family pedigree. Use Tab to move between family members and Enter to open.">
+      ${gens}${connectorsSvg()}${probandArrow()}${nodes}
+    </svg>
+  </div>
+  <div class="legend" aria-label="Legend">
+    <span>${mini(`<rect x="-8" y="-8" width="16" height="16" fill="none" stroke="${ink}" stroke-width="1.6"/>`)} Male</span>
+    <span>${mini(`<circle r="8" fill="none" stroke="${ink}" stroke-width="1.6"/>`)} Female</span>
+    <span>${mini(`<circle r="8" fill="var(--red)"/>`)} Affected</span>
+    <span>${mini(`<circle r="8" fill="none" stroke="var(--amber)" stroke-width="1.6"/><path d="M0 -8 A8 8 0 0 0 0 8Z" fill="var(--amber)"/>`)} Confirmed carrier</span>
+    <span>${mini(`<circle r="8" fill="var(--green-soft)" stroke="var(--green)" stroke-width="2.4"/>`)} Tested clear</span>
+    <span>${mini(`<circle r="7" fill="none" stroke="${ink}" stroke-width="1.6"/><line x1="-10" y1="10" x2="10" y2="-10" stroke="${ink}" stroke-width="1.6"/>`)} Deceased</span>
+    <span>${mini(`<circle r="4" fill="var(--teal)"/>`)} Interviewed</span>
+    <span>${mini(`<line x1="-9" y1="9" x2="2" y2="-2" stroke="${ink}" stroke-width="1.6"/><path d="M5 -5 l-7 1 l 5 5z" fill="${ink}"/>`)} Proband</span>
+  </div>
+  <p class="tree-hint">Select anyone on the tree to interview them. Scroll sideways on small screens.</p>`;
+}
+
+/* ---------- LAB ---------- */
+function renderLab() {
+  return `
+  <div class="panel-head">
+    <div><div class="eyebrow">${esc(CASE.gene)} genotyping</div><h2>Lab</h2></div>
+  </div>
+  ${state.certified ? renderTests() : renderCert()}`;
+}
+
+function renderCert() {
+  const fb = state.certFeedback;
+  const wrong = fb && fb.wrongCells ? fb.wrongCells : [];
+  const cells = state.punnett.map((v, i) => {
+    const r = PUNNETT_ROWS[Math.floor(i / 2)], c = PUNNETT_COLS[i % 2];
+    return `<button class="pcell ${v ? "filled" : ""} ${wrong.includes(i) ? "wrong" : ""}" data-action="cell" data-i="${i}" data-fid="cell-${i}" aria-label="Folake ${r}, Chidi ${c}: ${v || "empty"}. Activate to cycle.">${v || "?"}</button>`;
+  });
+  return `
+  <div class="grid-2">
+    <section class="card">
+      <div class="eyebrow">Step 1 · Lab certification</div>
+      <h3>Before you touch a sample</h3>
+      <p>The lab won't run tests for you until you show you can predict offspring. Chidi and Folake are both <b>carriers (Aa)</b>. Fill in their Punnett square — tap a cell to cycle AA → Aa → aa.</p>
+      <div class="punnett" role="group" aria-label="Punnett square, Chidi across the top, Folake down the side">
+        <div></div>
+        <div class="hdr">A<small>Chidi</small></div><div class="hdr">a<small>Chidi</small></div>
+        <div class="hdr">A<small>Folake</small></div>${cells[0]}${cells[1]}
+        <div class="hdr">a<small>Folake</small></div>${cells[2]}${cells[3]}
+      </div>
+      <p style="margin-bottom:4px"><b>What fraction of their children are expected to be affected?</b></p>
+      <div class="choices" role="radiogroup" aria-label="Fraction affected">
+        ${FRACTIONS.map(f => `<button class="choice" role="radio" aria-checked="${state.fraction === f}" data-action="frac" data-v="${f}" data-fid="frac-${f}">${f}</button>`).join("")}
+      </div>
+      <button class="btn" data-action="certify" data-fid="certify">Submit for certification</button>
+      ${fb ? `<div class="feedback bad" role="alert">${fb.html}</div>` : ""}
+    </section>
+    <section class="card">
+      <div class="eyebrow">Locked</div>
+      <div class="lock"><div class="ico" aria-hidden="true">🔒</div><div>
+        <h3>Genetic testing</h3>
+        <p class="muted">${CASE.testBudget} tests available after certification. Each reveals a living family member's genotype at ${esc(CASE.gene)}.</p>
+      </div></div>
+    </section>
+  </div>`;
+}
+
+function renderTests() {
+  const left = CASE.testBudget - state.testsUsed;
+  const byGen = [1, 2, 3, 4].map(g => {
+    const rows = Object.entries(FAMILY).filter(([, m]) => m.gen === g).map(([id, m]) => {
+      const t = state.tests[id];
+      let right;
+      if (m.deceased) right = `<span class="result na">No sample · deceased</span>`;
+      else if (m.knownAffected) right = `<span class="result aa">aa · diagnosed</span>`;
+      else if (t) right = `<span class="result ${t}">${t} · ${t === "Aa" ? "carrier" : t === "AA" ? "clear" : "affected"}</span>`;
+      else right = `<button class="btn small" data-action="test" data-id="${id}" data-fid="test-${id}" ${left <= 0 ? "disabled" : ""}>Run test</button>`;
+      return `<div class="test-row"><div class="who"><b>${esc(m.name)}</b><small>${esc(m.role)}</small></div>${right}</div>`;
+    }).join("");
+    return `<div class="test-gen">Generation ${["", "I", "II", "III", "IV"][g]}</div>${rows}`;
+  }).join("");
+
+  let last = "";
+  if (state.lastTest) {
+    const id = state.lastTest, m = FAMILY[id], t = state.tests[id];
+    last = `<div class="printout" aria-live="polite">${resultPrintout(id, t)}</div>${testNote(id) ? `<div class="feedback info">${testNote(id)}</div>` : ""}`;
+  }
+
+  const canPattern = interviewCount() >= CASE.interviewsForPattern;
+  const patternCard = state.pattern
+    ? `<div class="chip green">✓ Solved · autosomal recessive</div><p style="margin-top:10px" class="muted">The Gen-I archive is unsealed. Ngozi may be ready to talk.</p>`
+    : canPattern
+      ? `<p>You've heard enough of the family's story to classify the inheritance pattern.</p><button class="btn" data-action="pattern" data-fid="pattern">Run pattern analysis</button>`
+      : `<div class="lock"><div class="ico" aria-hidden="true">🔒</div><p class="muted">Unlocks after ${CASE.interviewsForPattern} interviews (${interviewCount()}/${CASE.interviewsForPattern}). You need the family's history before you can read the pattern.</p></div>`;
+
+  return `
+  <div class="grid-2">
+    <section class="card">
+      <div class="eyebrow">Step 2 · Genetic testing</div>
+      <h3>${left} of ${CASE.testBudget} tests remaining</h3>
+      <p class="muted" style="font-size:.9rem">Results update the pedigree. Think before you spend: some genotypes can be deduced for free.</p>
+      ${last}
+      <div class="test-list">${byGen}</div>
+    </section>
+    <div style="display:grid;gap:16px;align-content:start">
+      <section class="card">
+        <div class="eyebrow">Pattern analysis</div>
+        <h3>How is it inherited?</h3>
+        ${patternCard}
+      </section>
+      <section class="card">
+        <div class="eyebrow">Certification</div>
+        <div class="chip green">✓ Certified</div>
+        <p class="muted" style="margin-top:10px;font-size:.9rem">Chidi (Aa) × Folake (Aa): 1 AA : 2 Aa : 1 aa — a 25% chance of an affected child each pregnancy.</p>
+      </section>
+    </div>
+  </div>`;
+}
+
+function resultPrintout(id, t) {
+  const m = FAMILY[id];
+  const interp = t === "aa" ? "HOMOZYGOUS VARIANT — AFFECTED" : t === "Aa" ? "HETEROZYGOUS — CARRIER" : "NO VARIANT DETECTED — CLEAR";
+  return `${esc(CASE.gene)} PANEL · CASE ${esc(CASE.number)}
+SUBJECT   ${esc(m.name.toUpperCase())}
+GENOTYPE  ${t}
+RESULT    ${interp}`;
+}
+
+function testNote(id) {
+  const t = state.tests[id];
+  const notes = {
+    nia: "Teaching note: you could have deduced this for free. Kelechi is aa, so every child of his must receive an a. Nia is an <b>obligate carrier</b> — no test needed.",
+    folake: "Folake is a carrier — but she married in. She can only have passed the allele down Chidi's branch (Kelechi). A married-in carrier explains <b>one</b> affected branch, never both.",
+    yemi: "Yemi is a carrier — but she married in. She can only explain Obi's branch (Sam). A married-in carrier explains <b>one</b> affected branch, never both.",
+    chidi: "As the healthy parent of an affected child, Chidi had to be a carrier — he's an obligate carrier, too. The question is where <em>he</em> got it.",
+    obi: "As the healthy parent of an affected child, Obi had to be a carrier. The question is where <em>he</em> got it.",
+    ngozi: "Ngozi is clear. A child of a carrier has a 50% chance of not inheriting the allele — she simply drew the A.",
+    lola: "Lola is a carrier, through her mother Adanna. Like Nia, she's healthy — but the allele has now reached Generation IV."
+  };
+  if (notes[id]) return notes[id];
+  if (t === "AA") return `${esc(FAMILY[id].short)} is clear: no copy of the variant.`;
+  if (t === "Aa") return `${esc(FAMILY[id].short)} is a healthy carrier.`;
+  return "";
+}
+
+/* ---------- CASE BOARD ---------- */
+function nextLead() {
+  if (interviewCount() < 2) return "Start on the Family Tree: talk to Sam, the proband, and to Kelechi.";
+  if (!state.certified) return "Head to the Lab and earn your certification so you can run tests.";
+  if (interviewCount() < CASE.interviewsForPattern) return `Keep interviewing — pattern analysis needs ${CASE.interviewsForPattern} conversations.`;
+  if (!state.pattern) return "Run Pattern Analysis in the Lab.";
+  if (!state.ngoziDeep) return "Now that you know the pattern, Ngozi may agree to talk.";
+  if (!state.archive) return "The Gen-I records are unsealed — select Emeka or Adaeze on the tree to open the trunk.";
+  if (state.testsUsed < CASE.testsRequired) return `Run at least ${CASE.testsRequired} genetic tests to confirm the picture.`;
+  return "You have what you need. Make your case.";
+}
+
+function renderBoard() {
+  const objs = [
+    [interviewCount() >= CASE.interviewsObjective, `Interview at least ${CASE.interviewsObjective} family members (${Math.min(interviewCount(), CASE.interviewsObjective)}/${CASE.interviewsObjective})`],
+    [state.certified, "Earn lab certification (Punnett square)"],
+    [state.pattern, "Identify the inheritance pattern"],
+    [state.archive, "Open the Gen-I archive"],
+    [state.testsUsed >= CASE.testsRequired, `Run ${CASE.testsRequired}+ genetic tests (${Math.min(state.testsUsed, CASE.testsRequired)}/${CASE.testsRequired})`],
+    [state.solved, "Name patient zero"]
+  ];
+  const ev = state.evidence.length
+    ? `<ul class="evidence-list">${state.evidence.map(id => `<li><b>${esc(EVIDENCE[id].title)}</b>${esc(EVIDENCE[id].detail)}<br><small>${esc(EVIDENCE[id].source)}</small></li>`).join("")}</ul>`
+    : `<p class="muted">No evidence yet. Interviews, lab results and archives all produce evidence.</p>`;
+  const ready = caseReady();
+  return `
+  <div class="panel-head">
+    <div><div class="eyebrow">Case ${esc(CASE.number)}</div><h2>Case board</h2></div>
+  </div>
+  <div class="hint-box"><b>Next lead:</b> ${esc(nextLead())}</div>
+  <div class="grid-2">
+    <section class="card">
+      <h3>Objectives</h3>
+      <ul class="objectives">${objs.map(([d, t]) => `<li class="${d ? "done" : ""}"><span class="check" aria-hidden="true">${d ? "✓" : ""}</span><span class="obj-text">${esc(t)}<span class="sr-only">${d ? " — complete" : " — incomplete"}</span></span></li>`).join("")}</ul>
+      <hr style="border:0;border-top:1px dashed var(--line);margin:18px 0">
+      <h3>Make your case</h3>
+      <p class="muted" style="font-size:.9rem">${ready ? "Name one suspect and support it with exactly three pieces of evidence." : "Unlocks once you've identified the pattern, opened the archive, and run 3 tests."}</p>
+      <button class="btn" data-action="accuse" data-fid="accuse" ${ready ? "" : "disabled"}>${ready ? "Name patient zero" : "🔒 Locked"}</button>
+      ${state.solved ? `<button class="btn ghost" data-action="toWin" data-fid="toWin" style="margin-left:8px">View debrief</button>` : ""}
+    </section>
+    <section class="card">
+      <h3>Evidence <span class="chip">${state.evidence.length}</span></h3>
+      ${ev}
+    </section>
+  </div>`;
+}
+
+/* ---------- FIELD NOTES ---------- */
+function renderNotes() {
+  return `
+  <div class="panel-head">
+    <div><div class="eyebrow">Reference</div><h2>Field notes</h2></div>
+  </div>
+  <dl class="glossary">${GLOSSARY.map(g => `<div class="term"><dt>${esc(g.term)}</dt><dd>${esc(g.def)}</dd></div>`).join("")}</dl>`;
+}
+
+/* ---------- WIN ---------- */
+function renderWin() {
+  return `
+  <div class="screen-center">
+    <article class="card win-card">
+      <span class="stamp" style="color:var(--green);border-color:var(--green)">Case closed</span>
+      <h1 style="margin-top:.5em">Patient zero — Emeka Okafor.</h1>
+      <p class="muted">Born 1934 in Onitsha. Emigrated 1961. A healthy carrier of the ${esc(CASE.gene)} variant, like his parents before him — and the one ancestor through whom it reached both of his grandsons.</p>
+      <div class="stats">
+        <span class="chip">${state.testsUsed}/${CASE.testBudget} tests used</span>
+        <span class="chip">${interviewCount()} interviews</span>
+        <span class="chip">${state.evidence.length} evidence items</span>
+        <span class="chip ${state.attempts > 1 ? "amber" : "green"}">${state.attempts} accusation${state.attempts === 1 ? "" : "s"}</span>
+      </div>
+      <div class="debrief">
+        <section><h3>Sam is the proband</h3><p>Sam's diagnosis is what brought the family to clinical attention, so he's the <b>proband</b> — marked with an arrow on the pedigree. Kelechi was diagnosed first, but the investigation starts from whoever is referred.</p></section>
+        <section><h3>What "patient zero" means here</h3><p>The term is borrowed from epidemiology, where it names the first case of an outbreak. Genetic disorders aren't contagious, so here it means the <b>founder</b>: the ancestor through whom the variant entered this family. Kelechi's and Sam's a alleles are <b>identical by descent</b> — copies of the single allele Emeka carried, passed through his sons Chidi and Obi. (The variant itself is older; Emeka's healthy parents were carriers, and Ikenna was their aa son.)</p></section>
+        <section><h3>Why the married-in carriers weren't the answer</h3><p>Folake and Yemi really are carriers — that's why each couple could have an aa child. But each married into the family, and they're unrelated to each other. Folake can only explain Kelechi's branch; Yemi can only explain Sam's. Only someone upstream of <em>both</em> branches — Emeka or Adaeze — can link them, and Adaeze's side had no history while Emeka's letter described his brother's death from the same illness.</p></section>
+        <section><h3>What a counselor recommends next</h3><p><b>Carrier testing</b> for at-risk relatives who want it — especially Chiamaka, Adanna and Tobi, who are planning families, and their partners. <b>Nia is an obligate carrier</b> (her father is aa), so she doesn't need a test to know that, but she'll deserve counseling when she's old enough to make reproductive decisions. Lola carries it too. A carrier only has an affected child if their partner is also a carrier, which is why partner testing matters.</p></section>
+      </div>
+      <div class="title-actions">
+        <button class="btn" data-action="backToFile" data-fid="backToFile">Back to case file</button>
+        <button class="btn ghost" data-action="askReset" data-fid="resetWin">Play again</button>
+      </div>
+    </article>
+  </div>`;
+}
+
+/* =====================================================================
+   MODALS
+   ===================================================================== */
+function openModal(type, id) {
+  const ae = document.activeElement;
+  modal = { type, id, openerFid: ae && ae.dataset ? ae.dataset.fid : null };
+  renderModal(true);
+}
+function closeModal() {
+  if (!modal) return;
+  const fid = modal.openerFid;
+  modal = null;
+  $("#modal-root").innerHTML = "";
+  render();
+  if (fid) { const el = document.querySelector(`[data-fid="${fid}"]`); if (el) el.focus(); }
+}
+
+function renderModal(initial) {
+  const fid = !initial && document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.fid : null;
+  const spec = MODALS[modal.type](modal.id);
+  $("#modal-root").innerHTML = `
+  <div class="backdrop" data-action="backdrop">
+    <div class="modal ${spec.wide ? "wide" : ""}" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1">
+      <div class="modal-head">
+        ${spec.portrait || ""}
+        <div class="grow"><h2 id="modal-title">${spec.title}</h2>${spec.sub ? `<div class="sub">${spec.sub}</div>` : ""}</div>
+        <button class="modal-close" data-action="close" data-fid="modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">${spec.body}</div>
+      ${spec.foot ? `<div class="modal-foot">${spec.foot}</div>` : ""}
+    </div>
+  </div>`;
+  const dlg = $("#modal-root .modal");
+  if (fid) { const el = dlg.querySelector(`[data-fid="${fid}"]`); if (el) { el.focus(); return; } }
+  if (initial) dlg.focus();
+}
+
+function portraitHtml(id) {
+  const iv = INTERVIEWS[id], m = FAMILY[id];
+  const inner = iv && iv.portrait ? `<img src="${esc(iv.portrait)}" alt="">` : esc(initials(m.name));
+  return `<div class="portrait" aria-hidden="true">${inner}</div>`;
+}
+function audioHtml(id) {
+  const iv = INTERVIEWS[id];
+  const deep = iv.gate && state.pattern;
+  const src = deep ? iv.audioDeep : iv.audio;
+  if (src) return `<div class="audio-strip"><audio controls preload="none" src="${esc(src)}"></audio></div>`;
+  return `<div class="audio-strip"><span aria-hidden="true">🎙</span> placeholder — replace with your own recording <code>audio/${id}${deep ? "_deep" : ""}.mp3</code></div>`;
+}
+function clueHtml(evId) {
+  if (!evId) return "";
+  const e = EVIDENCE[evId];
+  return `<div class="clue"><span aria-hidden="true">📎</span><div><div class="tag">Evidence logged</div><b>${esc(e.title)}</b><div style="font-size:.9rem">${esc(e.detail)}</div></div></div>`;
+}
+
+const MODALS = {
+  interview(id) {
+    const m = FAMILY[id], iv = INTERVIEWS[id];
+    const gated = iv.gate && !state.pattern;
+    const lines = gated ? iv.refusal : iv.lines;
+    return {
+      title: esc(m.name), sub: `${m.age} · ${esc(m.role)}`, portrait: portraitHtml(id),
+      body: `${audioHtml(id)}<div class="dialogue">${lines.map(l => `<p>${l}</p>`).join("")}</div>
+        ${gated ? `<div class="feedback info">Ngozi won't talk until you've established the inheritance pattern (Lab → Pattern analysis).</div>` : clueHtml(iv.clue)}`,
+      foot: `<button class="btn" data-action="close" data-fid="modal-done">Done</button>`
+    };
+  },
+  info(id) {
+    const m = FAMILY[id];
+    let body;
+    if (m.minor) body = `<p>${esc(m.short)} is ${m.age}. Counselors don't interview young children about family medical history — talk to the parents instead. ${esc(m.short)} can still be tested in the Lab with parental consent.</p>`;
+    else body = `<p>${esc(m.name)} (${esc(m.years)}) is deceased. There's no one to interview and no sample to test.</p>
+      <div class="feedback info">Emeka and Adaeze's personal records are sealed. Ngozi holds the key to her father's trunk — and she won't open it until you can explain how this illness is inherited.</div>`;
+    return { title: esc(m.name), sub: esc(m.role), portrait: `<div class="portrait" aria-hidden="true">${esc(initials(m.name))}</div>`, body,
+      foot: `<button class="btn" data-action="close" data-fid="modal-done">Close</button>` };
+  },
+  archive() {
+    return {
+      title: "The trunk", sub: "Gen-I archive · Emeka Okafor's papers", wide: true,
+      body: `<p class="trunk-intro">${esc(LETTER.intro)}</p>
+        <div class="letter">
+          <p class="date">${esc(LETTER.date)}</p>
+          ${LETTER.paragraphs.map(p => `<p>${esc(p)}</p>`).join("")}
+          <p class="sig">${esc(LETTER.signoff).replace(/\n/g, "<br>")}</p>
+        </div>
+        ${clueHtml("e_letter")}`,
+      foot: `<button class="btn" data-action="close" data-fid="modal-done">Close the trunk</button>`
+    };
+  },
+  pattern() {
+    const pick = PATTERN_OPTIONS.find(o => o.id === state.patternPick);
+    return {
+      title: "Pattern analysis", sub: "Which inheritance pattern fits the Okafor pedigree?",
+      body: `<p>Consider what you've learned: who is affected, who their parents are, and how the two affected cousins are related.</p>
+        <div class="choices" role="radiogroup" aria-label="Inheritance pattern" style="display:grid">
+          ${PATTERN_OPTIONS.map(o => `<button class="choice" role="radio" aria-checked="${state.patternPick === o.id}" data-action="patternPick" data-v="${o.id}" data-fid="pp-${o.id}" ${state.pattern ? "disabled" : ""}>${esc(o.label)}</button>`).join("")}
+        </div>
+        ${pick ? `<div class="feedback ${pick.correct ? "good" : "bad"}" role="alert">${esc(pick.feedback)}${pick.correct ? `<br><br><b>Unlocked:</b> the Gen-I archive and Ngozi's interview.` : ""}</div>` : ""}`,
+      foot: `<button class="btn ${state.pattern ? "" : "ghost"}" data-action="close" data-fid="modal-done">${state.pattern ? "Continue" : "Close"}</button>`
+    };
+  },
+  accuse() {
+    const a = state.accuse;
+    const suspects = SUSPECTS.map(s => {
+      const m = FAMILY[s.id];
+      return `<button class="suspect" role="radio" aria-checked="${a.suspect === s.id}" data-action="suspect" data-v="${s.id}" data-fid="sus-${s.id}"><b>${esc(m.name)}</b><small>Gen ${["", "I", "II"][m.gen]} · ${esc(m.role.split(" · ")[0])}</small></button>`;
+    }).join("");
+    const evs = state.evidence.map(id => {
+      const on = a.evidence.includes(id);
+      return `<button class="ev-opt" role="checkbox" aria-checked="${on}" data-action="evPick" data-v="${id}" data-fid="ev-${id}"><span class="box" aria-hidden="true">${on ? "✓" : ""}</span><span><b>${esc(EVIDENCE[id].title)}</b><br><small class="muted">${esc(EVIDENCE[id].source)}</small></span></button>`;
+    }).join("");
+    const ok = a.suspect && a.evidence.length === 3;
+    return {
+      title: "Name patient zero", sub: "One suspect. Exactly three pieces of evidence.", wide: true,
+      body: `<h3 style="font-size:1rem">1 · Who brought the variant into this family?</h3>
+        <div class="suspects" role="radiogroup" aria-label="Suspect">${suspects}</div>
+        <h3 style="font-size:1rem">2 · Your evidence <span class="chip">${a.evidence.length}/3</span></h3>
+        <div class="ev-pick" role="group" aria-label="Evidence, choose three">${evs}</div>
+        ${a.feedback ? `<div class="feedback bad" role="alert">${a.feedback}</div>` : ""}`,
+      foot: `<button class="btn ghost" data-action="close" data-fid="modal-cancel">Keep investigating</button>
+             <button class="btn" data-action="submitCase" data-fid="submitCase" ${ok ? "" : "disabled"}>Submit case</button>`
+    };
+  },
+  reset() {
+    return {
+      title: "Reset the investigation?", sub: "This clears all progress on this device.",
+      body: `<p>Interviews, test results, evidence and certification will all be erased.</p>`,
+      foot: `<button class="btn ghost" data-action="close" data-fid="modal-cancel">Cancel</button>
+             <button class="btn danger" data-action="doReset" data-fid="doReset">Reset everything</button>`
+    };
+  }
+};
+
+/* =====================================================================
+   ACTIONS
+   ===================================================================== */
+function openNode(id) {
+  const m = FAMILY[id];
+  if (m.deceased) {
+    if (state.pattern) {
+      state.archive = true;
+      addEvidence("e_letter");
+      save(); render();
+      openModal("archive");
+    } else openModal("info", id);
+    return;
+  }
+  if (m.minor || !INTERVIEWS[id]) { openModal("info", id); return; }
+  const iv = INTERVIEWS[id];
+  if (!(iv.gate && !state.pattern)) {
+    state.interviewed[id] = true;
+    if (iv.gate) state.ngoziDeep = true;
+    addEvidence(iv.clue);
+    save(); render();
+  }
+  openModal("interview", id);
+}
+
+function certify() {
+  const expected = [];
+  PUNNETT_ROWS.forEach(r => PUNNETT_COLS.forEach(c => expected.push([r, c].sort().join(""))));
+  // sort() puts uppercase first, so "aA" → "Aa"
+  const wrongCells = state.punnett.map((v, i) => (v === expected[i] ? -1 : i)).filter(i => i >= 0);
+  const msgs = [];
+  if (state.punnett.some(v => !v)) msgs.push("Fill every cell first — each box is one possible child.");
+  else if (wrongCells.length) {
+    wrongCells.forEach(i => {
+      const r = PUNNETT_ROWS[Math.floor(i / 2)], c = PUNNETT_COLS[i % 2];
+      msgs.push(`Folake's <b>${r}</b> + Chidi's <b>${c}</b> should give <b>${expected[i]}</b>, not ${state.punnett[i]}. Each child gets one allele from the row parent and one from the column parent.`);
+    });
+  }
+  const fracFb = {
+    null: "Choose the fraction of children expected to be affected.",
+    "0%": "Both parents carry an a. If each passes it on, the child is aa — that happens in 1 of 4 boxes.",
+    "50%": "50% is the chance of a <em>carrier</em> (Aa) child — the two middle boxes. Affected requires aa.",
+    "75%": "75% is the chance of an <em>unaffected</em> child (AA + Aa). Affected requires two copies of a."
+  };
+  if (state.fraction !== "25%") msgs.push(fracFb[state.fraction]);
+  if (msgs.length) {
+    setState({ certFeedback: { wrongCells, html: `<b>Not certified yet.</b><ul>${msgs.map(m => `<li>${m}</li>`).join("")}</ul>` } });
+    return;
+  }
+  toast("<b>Lab certified.</b> Genetic testing unlocked.");
+  setState({ certified: true, certFeedback: null });
+}
+
+function runTest(id) {
+  const m = FAMILY[id];
+  if (m.deceased || m.knownAffected || state.tests[id] || state.testsUsed >= CASE.testBudget) return;
+  state.tests[id] = m.truth;
+  state.testsUsed += 1;
+  state.lastTest = id;
+  if (state.tests.chidi === "Aa" && state.tests.obi === "Aa") addEvidence("e_both_sons");
+  setState({});
+  const btn = document.querySelector(".printout");
+  if (btn) btn.scrollIntoView({ block: "nearest" });
+}
+
+function submitCase() {
+  const a = state.accuse;
+  state.attempts += 1;
+  const ev = a.evidence;
+  if (a.suspect === CASE.answer) {
+    const letter = ev.includes("e_letter");
+    const structure = ev.includes("e_two_branches") || ev.includes("e_both_sons");
+    if (letter && structure) {
+      state.solved = true;
+      state.accuse.feedback = null;
+      modal = null;
+      $("#modal-root").innerHTML = "";
+      setState({ screen: "win" });
+      window.scrollTo(0, 0);
+      return;
+    }
+    let fb = "<b>Right suspect — but this case wouldn't hold up.</b> ";
+    if (!letter) fb += "Nothing you've chosen places the variant <em>with</em> Emeka rather than with Adaeze. You need the document that ties his family to the illness. ";
+    if (!structure) {
+      const missing = has("e_two_branches") || has("e_both_sons") ? "" : " (If you don't have one yet: talk to Obi, or test both of Emeka's sons.)";
+      fb += `You also need structural proof that both affected branches meet at him — evidence about the two branches or his two carrier sons.${missing}`;
+    }
+    setState({ accuse: Object.assign({}, a, { feedback: fb }) });
+    return;
+  }
+  const s = SUSPECTS.find(x => x.id === a.suspect);
+  setState({ accuse: Object.assign({}, a, { feedback: `<b>Not ${esc(FAMILY[a.suspect].short)}.</b> ${esc(s.rebuttal)}` }) });
+}
+
+const ACTIONS = {
+  start: () => setState({ screen: (interviewCount() > 0 || state.certified) ? "hub" : "brief" }),
+  begin: () => setState({ screen: "hub", tab: "tree" }),
+  toTitle: () => setState({ screen: "title" }),
+  tab: el => setState({ tab: el.dataset.tab }),
+  theme: () => setState({ theme: { auto: "light", light: "dark", dark: "auto" }[state.theme] }),
+  node: el => openNode(el.dataset.id),
+  cell: el => {
+    const i = +el.dataset.i, p = state.punnett.slice();
+    p[i] = PUNNETT_CYCLE[(PUNNETT_CYCLE.indexOf(p[i]) + 1) % PUNNETT_CYCLE.length];
+    setState({ punnett: p });
+  },
+  frac: el => setState({ fraction: el.dataset.v }),
+  certify,
+  test: el => runTest(el.dataset.id),
+  pattern: () => openModal("pattern"),
+  patternPick: el => {
+    const o = PATTERN_OPTIONS.find(x => x.id === el.dataset.v);
+    if (o.correct && !state.pattern) toast("<b>Pattern established.</b> Gen-I archive unsealed.");
+    setState({ patternPick: o.id, pattern: state.pattern || !!o.correct });
+  },
+  accuse: () => openModal("accuse"),
+  suspect: el => setState({ accuse: Object.assign({}, state.accuse, { suspect: el.dataset.v, feedback: null }) }),
+  evPick: el => {
+    const id = el.dataset.v, cur = state.accuse.evidence.slice();
+    const i = cur.indexOf(id);
+    if (i >= 0) cur.splice(i, 1);
+    else if (cur.length < 3) cur.push(id);
+    else { toast("Exactly three pieces of evidence — deselect one first."); return; }
+    setState({ accuse: Object.assign({}, state.accuse, { evidence: cur, feedback: null }) });
+  },
+  submitCase,
+  toWin: () => setState({ screen: "win" }),
+  backToFile: () => setState({ screen: "hub", tab: "board" }),
+  askReset: () => openModal("reset"),
+  doReset: () => {
+    try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+    const theme = state.theme;
+    state = defaultState();
+    state.theme = theme;
+    modal = null;
+    $("#modal-root").innerHTML = "";
+    save(); render();
+    const s = $('[data-fid="start"]'); if (s) s.focus();
+  },
+  close: () => closeModal(),
+  backdrop: (el, e) => { if (e.target === el) closeModal(); }
+};
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-action]");
+  if (!el || el.disabled) return;
+  const fn = ACTIONS[el.dataset.action];
+  if (fn) fn(el, e);
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && modal) { e.preventDefault(); closeModal(); return; }
+
+  // Enter/Space on SVG pedigree nodes (they're <g role="button">, not native buttons)
+  const node = e.target.closest && e.target.closest(".ped-node");
+  if (node && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openNode(node.dataset.id); return; }
+
+  // Arrow keys move between tabs
+  if (e.target.getAttribute && e.target.getAttribute("role") === "tab" && (e.key === "ArrowRight" || e.key === "ArrowLeft")) {
+    const ids = ["tree", "lab", "board", "notes"];
+    const i = ids.indexOf(e.target.dataset.tab);
+    const next = ids[(i + (e.key === "ArrowRight" ? 1 : ids.length - 1)) % ids.length];
+    setState({ tab: next });
+    const t = $(`#tab-${next}`); if (t) t.focus();
+    e.preventDefault();
+    return;
+  }
+
+  // Focus trap inside modal
+  if (e.key === "Tab" && modal) {
+    const dlg = $("#modal-root .modal");
+    const f = [...dlg.querySelectorAll("button:not([disabled]), [href], audio, [tabindex]:not([tabindex='-1'])")];
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === dlg)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+
+render();
+</script>
+</body>
+</html>

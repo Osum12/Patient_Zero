@@ -1,6 +1,6 @@
 # Patient Zero
 
-An interactive genetics mystery for AP Biology (Unit 5: Heredity). Students play a genetic counselor
+An interactive genetics mystery. Students play a genetic counselor
 tracing a fictional autosomal recessive disorder, Keller Syndrome, through the four-generation Okafor
 pedigree to find the family's "patient zero."
 

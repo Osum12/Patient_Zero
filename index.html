@@ -620,7 +620,8 @@ function defaultState() {
 function load() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (raw) return Object.assign(defaultState(), JSON.parse(raw));
+    // Always open on the title screen; saved progress is offered via "Resume investigation".
+    if (raw) return Object.assign(defaultState(), JSON.parse(raw), { screen: "title" });
   } catch (e) { /* storage unavailable */ }
   return defaultState();
 }

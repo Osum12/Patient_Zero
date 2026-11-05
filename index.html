@@ -4582,73 +4582,118 @@ function renderHub() {
 }
 
 /* ---------- FAMILY TREE ---------- */
+// Two layouts from the same data. "wide": generations are rows (classic pedigree).
+// "compact" (phones): generations are columns and each family runs down the page,
+// so the tree fits the screen width and only scrolls vertically.
 const R = 18;
-function shapeSvg(m, cls, extra = "") {
-  const { x } = m, y = GEN_Y[m.gen];
-  if (m.sex === "M") return `<rect class="${cls}" x="${x - R}" y="${y - R}" width="${R * 2}" height="${R * 2}" rx="2"${extra}/>`;
-  return `<circle class="${cls}" cx="${x}" cy="${y}" r="${R}"${extra}/>`;
-}
-function halfSvg(m) {
-  const { x } = m, y = GEN_Y[m.gen];
-  if (m.sex === "M") return `<rect class="half" x="${x - R}" y="${y - R}" width="${R}" height="${R * 2}" rx="2"/>`;
-  return `<path class="half" d="M ${x} ${y - R} A ${R} ${R} 0 0 0 ${x} ${y + R} Z"/>`;
+const COMPACT_MQ = window.matchMedia("(max-width: 700px)");
+const COL_GAP = 100, ROW_GAP = 76;
+
+function treeLayout() {
+  const mem = M(), ids = Object.keys(mem);
+  if (!COMPACT_MQ.matches) {
+    const pos = {};
+    for (const id of ids) pos[id] = { x: mem[id].x, y: GEN_Y[mem[id].gen] };
+    return { compact: false, W: 1020, H: 540, pos };
+  }
+  // Pack tightly: walk members in their wide-layout order (x) and place each one as high as its
+  // column allows. The mapping stays monotonic, so families keep their order and lines never cross.
+  const col = g => 34 + (g - 1) * COL_GAP;
+  const pos = {}, lastY = {};
+  let prevX = null, prevY = 54;
+  const byX = ids.slice().sort((a, b) => mem[a].x - mem[b].x);
+  for (let i = 0; i < byX.length;) {
+    const x = mem[byX[i]].x, group = [];
+    while (i < byX.length && mem[byX[i]].x === x) group.push(byX[i++]);
+    let y = prevX === null ? 54 : prevY;
+    for (const id of group) if (lastY[mem[id].gen] !== undefined) y = Math.max(y, lastY[mem[id].gen] + ROW_GAP);
+    for (const id of group) { pos[id] = { x: col(mem[id].gen), y }; lastY[mem[id].gen] = y; }
+    prevX = x; prevY = y;
+  }
+  return { compact: true, W: col(4) + 50, H: prevY + 64, pos, col };
 }
 
-function nodeSvg(id) {
-  const m = M()[id], y = GEN_Y[m.gen], st = statusOf(id);
+function shapeSvg(m, p, cls, extra = "") {
+  if (m.sex === "M") return `<rect class="${cls}" x="${p.x - R}" y="${p.y - R}" width="${R * 2}" height="${R * 2}" rx="2"${extra}/>`;
+  return `<circle class="${cls}" cx="${p.x}" cy="${p.y}" r="${R}"${extra}/>`;
+}
+function halfSvg(m, p) {
+  if (m.sex === "M") return `<rect class="half" x="${p.x - R}" y="${p.y - R}" width="${R}" height="${R * 2}" rx="2"/>`;
+  return `<path class="half" d="M ${p.x} ${p.y - R} A ${R} ${R} 0 0 0 ${p.x} ${p.y + R} Z"/>`;
+}
+
+function nodeSvg(id, L) {
+  const m = M()[id], p = L.pos[id], { x, y } = p, st = statusOf(id);
   const sub = m.deceased ? `d. ${m.years.split(/[–-]/)[1]}` : `${m.age}`;
   const geno = fmtGeno(shownGeno(id));
   const label = `${m.name}, ${m.deceased ? "deceased" : m.age}, ${m.role}. ${statusLabel(st)}${geno ? ", genotype " + geno : ""}${state.interviewed[id] ? ", interviewed" : ""}.`;
-  let parts = shapeSvg(m, "shape");
-  if (st === "carrier") parts += halfSvg(m) + shapeSvg(m, "shape", ' style="fill:none"');
-  if (m.deceased) parts += `<line class="slash" x1="${m.x - R - 7}" y1="${y + R + 7}" x2="${m.x + R + 7}" y2="${y - R - 7}"/>`;
-  if (state.interviewed[id]) parts += `<circle class="idot" cx="${m.x + R + 5}" cy="${y - R + 2}" r="5"/>`;
+  let parts = shapeSvg(m, p, "shape");
+  if (st === "carrier") parts += halfSvg(m, p) + shapeSvg(m, p, "shape", ' style="fill:none"');
+  if (m.deceased) parts += `<line class="slash" x1="${x - R - 7}" y1="${y + R + 7}" x2="${x + R + 7}" y2="${y - R - 7}"/>`;
+  if (state.interviewed[id]) parts += `<circle class="idot" cx="${x + R + 5}" cy="${y - R + 2}" r="5"/>`;
   const ring = m.sex === "M"
-    ? `<rect class="ring" x="${m.x - R - 5}" y="${y - R - 5}" width="${R * 2 + 10}" height="${R * 2 + 10}" rx="6"/>`
-    : `<circle class="ring" cx="${m.x}" cy="${y}" r="${R + 5}"/>`;
+    ? `<rect class="ring" x="${x - R - 5}" y="${y - R - 5}" width="${R * 2 + 10}" height="${R * 2 + 10}" rx="6"/>`
+    : `<circle class="ring" cx="${x}" cy="${y}" r="${R + 5}"/>`;
   return `<g class="ped-node ${st}" role="button" tabindex="0" aria-label="${esc(label)}" data-action="node" data-id="${id}" data-fid="node-${id}">
     <title>${esc(m.name)}</title>
     ${ring}${parts}
-    <text class="ped-name" x="${m.x}" y="${y + R + 16}">${esc(m.short)}</text>
-    <text class="ped-sub" x="${m.x}" y="${y + R + 30}">${esc(sub)}${geno ? " · " + geno : ""}</text>
+    <text class="ped-name" x="${x}" y="${y + R + 16}">${esc(m.short)}</text>
+    <text class="ped-sub" x="${x}" y="${y + R + 30}">${esc(sub)}${geno ? " · " + geno : ""}</text>
   </g>`;
 }
 
-function connectorsSvg() {
+const seg = (x1, y1, x2, y2) => `<line class="ped-line" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+
+function connectorsSvg(L) {
   let out = "";
   for (const c of C().couples) {
-    const [a, b] = c.partners.map(id => M()[id]).sort((p, q) => p.x - q.x);
-    const y = GEN_Y[a.gen];
-    out += `<line class="ped-line" x1="${a.x + R}" y1="${y}" x2="${b.x - R}" y2="${y}"/>`;
-    if (!c.children || !c.children.length) continue;
-    const mid = (a.x + b.x) / 2;
-    const kids = c.children.map(id => M()[id]);
-    const childY = GEN_Y[kids[0].gen];
-    const railY = childY - R - 26;
-    out += `<line class="ped-line" x1="${mid}" y1="${y}" x2="${mid}" y2="${railY}"/>`;
-    const xs = kids.map(k => k.x).concat(mid);
-    const lo = Math.min(...xs), hi = Math.max(...xs);
-    if (hi > lo) out += `<line class="ped-line" x1="${lo}" y1="${railY}" x2="${hi}" y2="${railY}"/>`;
-    for (const k of kids) out += `<line class="ped-line" x1="${k.x}" y1="${railY}" x2="${k.x}" y2="${childY - R}"/>`;
+    const kids = (c.children || []).map(id => L.pos[id]);
+    if (!L.compact) {
+      const [a, b] = c.partners.map(id => L.pos[id]).sort((p, q) => p.x - q.x);
+      out += seg(a.x + R, a.y, b.x - R, b.y);
+      if (!kids.length) continue;
+      const mid = (a.x + b.x) / 2, childY = kids[0].y, railY = childY - R - 26;
+      out += seg(mid, a.y, mid, railY);
+      const xs = kids.map(k => k.x).concat(mid), lo = Math.min(...xs), hi = Math.max(...xs);
+      if (hi > lo) out += seg(lo, railY, hi, railY);
+      for (const k of kids) out += seg(k.x, railY, k.x, childY - R);
+    } else {
+      // partners stacked vertically, joined by a bracket on their right; children branch off to the next column
+      const [a, b] = c.partners.map(id => L.pos[id]).sort((p, q) => p.y - q.y);
+      const bx = a.x + R + 20;
+      out += `<path class="ped-line" d="M ${a.x + R} ${a.y} H ${bx} V ${b.y} H ${b.x + R}"/>`;
+      if (!kids.length) continue;
+      const mid = (a.y + b.y) / 2, childX = kids[0].x, railX = childX - R - 18;
+      out += seg(bx, mid, railX, mid);
+      const ys = kids.map(k => k.y).concat(mid), lo = Math.min(...ys), hi = Math.max(...ys);
+      if (hi > lo) out += seg(railX, lo, railX, hi);
+      for (const k of kids) out += seg(railX, k.y, childX - R, k.y);
+    }
   }
   return out;
 }
 
-function probandArrow() {
-  const p = Object.values(M()).find(m => m.proband);
-  if (!p) return "";
-  const y = GEN_Y[p.gen];
-  const tipX = p.x - R - 3, tipY = y + R + 3;
+function probandArrow(L) {
+  const id = Object.keys(M()).find(i => M()[i].proband);
+  if (!id) return "";
+  const { x, y } = L.pos[id];
+  // wide: arrow from the lower left; compact: a short arrow tucked between the sibship rail and the node
+  // (the right side holds the couple bracket, the area below holds the label)
+  const [tx, ty, fx, fy] = L.compact ? [x - R - 2, y + 9, x - R - 16, y + 19] : [x - R - 3, y + R + 3, x - R - 25, y + R + 21];
+  const len = Math.hypot(tx - fx, ty - fy), ux = (tx - fx) / len, uy = (ty - fy) / len;
+  const bx = tx - ux * 9, by = ty - uy * 9;
   return `<g aria-hidden="true">
-    <line class="ped-arrow" x1="${tipX - 22}" y1="${tipY + 18}" x2="${tipX - 4}" y2="${tipY + 3}"/>
-    <path class="ped-arrow" d="M ${tipX} ${tipY} l -10 2 l 6 6 z"/>
+    <line class="ped-arrow" x1="${fx}" y1="${fy}" x2="${bx}" y2="${by}"/>
+    <path class="ped-arrow" d="M ${tx} ${ty} L ${bx - uy * 4} ${by + ux * 4} L ${bx + uy * 4} ${by - ux * 4} Z"/>
   </g>`;
 }
 
 function renderTree() {
-  const c = C();
-  const gens = Object.entries(GEN_Y).map(([g, y]) => `<text class="ped-gen" x="12" y="${y + 5}">${ROMAN[g]}</text>`).join("");
-  const nodes = Object.keys(M()).map(nodeSvg).join("");
+  const c = C(), L = treeLayout();
+  const gens = L.compact
+    ? [1, 2, 3, 4].map(g => `<text class="ped-gen" x="${L.col(g)}" y="20" text-anchor="middle">${ROMAN[g]}</text>`).join("")
+    : Object.entries(GEN_Y).map(([g, y]) => `<text class="ped-gen" x="12" y="${y + 5}">${ROMAN[g]}</text>`).join("");
+  const nodes = Object.keys(M()).map(id => nodeSvg(id, L)).join("");
   const mini = inner => `<svg viewBox="-10 -10 20 20" aria-hidden="true">${inner}</svg>`;
   const ink = "var(--ink)";
   const carrierLabel = c.pattern === "ad" ? "Variant, no symptoms yet" : "Confirmed carrier";
@@ -4657,9 +4702,9 @@ function renderTree() {
     <div><div class="eyebrow">Pedigree · ${esc(c.disorder)}</div><h2>${esc(c.family)} family tree</h2></div>
     <div class="muted" style="font-size:.9rem">${interviewCount()} interviewed · ${Object.keys(state.tests).length} tested</div>
   </div>
-  <div class="tree-scroll" tabindex="-1">
-    <svg viewBox="0 0 1020 540" role="group" aria-label="${esc(c.family)} family pedigree. Use Tab to move between family members and Enter to open.">
-      ${gens}${connectorsSvg()}${probandArrow()}${nodes}
+  <div class="tree-scroll${L.compact ? " compact" : ""}" tabindex="-1">
+    <svg viewBox="0 0 ${L.W} ${Math.round(L.H)}"${L.compact ? ` style="min-width:0;max-width:440px;margin:0 auto"` : ""} role="group" aria-label="${esc(c.family)} family pedigree${L.compact ? ", generations shown as columns from left to right" : ""}. Use Tab to move between family members and Enter to open.">
+      ${gens}${connectorsSvg(L)}${probandArrow(L)}${nodes}
     </svg>
   </div>
   <div class="legend" aria-label="Legend">
@@ -4672,7 +4717,9 @@ function renderTree() {
     <span>${mini(`<circle r="4" fill="var(--teal)"/>`)} Interviewed</span>
     <span>${mini(`<line x1="-9" y1="9" x2="2" y2="-2" stroke="${ink}" stroke-width="1.6"/><path d="M5 -5 l-7 1 l 5 5z" fill="${ink}"/>`)} Proband</span>
   </div>
-  <p class="tree-hint">Select anyone on the tree to interview them. Scroll sideways on small screens.</p>`;
+  <p class="tree-hint">${L.compact
+    ? "Generations run left to right (I → IV); each family reads top to bottom. Tap anyone to interview them."
+    : "Select anyone on the tree to interview them."}</p>`;
 }
 
 /* ---------- LAB ---------- */
@@ -5220,6 +5267,9 @@ document.addEventListener("keydown", e => {
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
 });
+
+// Switch pedigree layout when the screen crosses the phone breakpoint (rotation, resizing)
+COMPACT_MQ.addEventListener("change", () => { if (state.screen === "hub" && state.tab === "tree") render(); });
 
 render();
 </script>
